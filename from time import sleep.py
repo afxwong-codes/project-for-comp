@@ -71,33 +71,53 @@ while True:
                       - a balcony
                       - a dressing table (mirror)      """)
                 sleep(5)
-                pick = get_attempted_input("where do you want to look?", ["look in closet", "investigate the closet", "investigate closet", "look under bed", "investigate bed", "look under rug", "investigate rug", "open door", "go to balcony", "look in mirror", "investigate dressing table"])
+                pick = get_attempted_input(
+                    "where do you want to look?",
+                    [
+                        "look in closet", "investigate the closet", "investigate closet",
+                        "look under bed", "investigate bed",
+                        "look under rug", "investigate rug",
+                        "open door", "go to balcony",
+                        "look in mirror", "investigate dressing table",
+                        "read note", "search drawers", "check balcony floor", "inspect window", "listen at door"
+                    ]
+                )
                 if pick in ["look in closet", "investigate the closet", "investigate closet"]:
                     print("""Inside you see a red cloth, stained perhaps, with the initials 'C.D.' on it. It looks like it was torn from a dress.""")
                     sleep(1)
-                    print("You feel uneasy. Where next?")
+                    print("You feel uneasy. As you look closer, you notice a faint perfume scent—one you remember from the kitchen earlier.")
                 elif pick in ["look under bed", "investigate bed"]:
                     print("You find a dusty box. Inside is a photo of Clair with another person, their face scratched out.")
                     sleep(1)
-                    print("Who could it be?")
+                    print("Who could it be? On the back, a date is written: 'Midnight, last Friday.'")
                 elif pick in ["look under rug", "investigate rug"]:
                     print("You lift the rug and find a trapdoor. It's locked, but there are muddy footprints leading to it.")
                     sleep(1)
-                    print("Maybe someone used this recently.")
+                    print("Maybe someone used this recently. You also spot a small golden key nearby.")
                 elif pick in ["open door"]:
                     print("The door leads to a small bathroom. Nothing seems out of place, but the window is open.")
                     sleep(1)
-                    print("Did someone escape?")
+                    print("Did someone escape? On the windowsill, you find a single red thread.")
                 elif pick in ["go to balcony"]:
                     print("On the balcony, you see a scarf caught on the railing. It matches the red cloth from the closet.")
                     sleep(1)
-                    print("The garden is just below.")
+                    print("The garden is just below. You also notice a muddy handprint on the balcony door.")
                 elif pick in ["look in mirror", "investigate dressing table"]:
                     print("You find a hidden drawer in the dressing table. Inside is a note: 'Meet me at midnight. -R'")
                     sleep(1)
-                    print("Who is 'R'? This could be a clue.")
+                    print("Who is 'R'? This could be a clue. Next to the note is a small locket with a faded photo of Clair and a mysterious figure.")
+                elif pick == "read note":
+                    print("You read the note again: 'Meet me at midnight. -R'. On the back, you notice a faint map of the garden.")
+                elif pick == "search drawers":
+                    print("You search all the drawers and find a broken necklace clasp and a small scrap of red fabric.")
+                elif pick == "check balcony floor":
+                    print("You check the balcony floor and find a muddy footprint and a cigarette butt with lipstick on it.")
+                elif pick == "inspect window":
+                    print("You inspect the bathroom window and see scratch marks, as if someone climbed out in a hurry.")
+                elif pick == "listen at door":
+                    print("You listen at the door and hear faint footsteps in the hallway. Someone might be watching you.")
                 else:
-                    print("You don't find anything unusual.")
+                    print("You don't find anything unusual, but you can't shake the feeling that you're being watched.")
                 # After exploring, ask where to go next
                 next_room = get_attempted_input("Where do you want to go now? (e.g., 'investigate garden', 'investigate kitchen', 'investigate room 5')", [
                     "investigate garden", "investigate kitchen", "investigate room 5", "investigate room 6", "investigate room 7", "investigate room 8", "investigate room 9", "investigate room 10", "investigate room 11", "investigate room 12"])
