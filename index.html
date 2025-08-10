@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mansion Mystery Game</title>
+    <style>
+        body { font-family: monospace; background: #222; color: #eee; }
+        #output { width: 100%; height: 400px; background: #111; color: #eee; padding: 10px; border: none; resize: none; }
+        #input { width: 100%; padding: 10px; font-size: 1em; }
+        #container { max-width: 700px; margin: 40px auto; }
+        button { padding: 10px 20px; font-size: 1em; }
+    </style>
+</head>
+<body>
+<div id="container">
+    <h1>Mansion Mystery Game</h1>
+    <textarea id="output" readonly></textarea><br>
+    <input id="input" type="text" placeholder="Type your command here..." autofocus>
+    <button onclick="handleInput()">Submit</button>
+</div>
+<script>
+const output = document.getElementById('output');
+const input = document.getElementById('input');
+
+let score = 0;
+let state = 'start';
+let name = '';
+let attempts = 0;
+let clues_found = [];
+
+function print(text) {
+    output.value += text + '\n';
+    output.scrollTop = output.scrollHeight;
+}
+
+function resetAttempts() {
+    attempts = 0;
+}
+
+function getAttemptedInput(prompt, validAnswers, nextState) {
+    print(prompt);
+    state = nextState;
+    resetAttempts();
+    window.validAnswers = validAnswers;
+}
+
+function handleInput() {
+    const value = input.value.trim().toLowerCase();
+    input.value = '';
+    if (!value) return;
+    print('> ' + value);
+
+    // Game logic
+    if (state === 'start') {
+        name = value;
+        print(`Hi ${name}`);
+        print("This morning, you found a body in the living room.");
+        print("12 people live in the mansion, in rooms labeled 1-12 plus the living room, dining room, kitchen and garden.");
+        print("To investigate a room say 'investigate ___' (do not use capitals).");
+        print("The answers will never be longer than 5 words.");
+        getAttemptedInput("Find special objects to increase your score, where do you look first?", [
+            "investigate living room", "investigate the living room",
+            "investigate kitchen", "investigate garden",
+            "investigate dining room", "investigate room 1", "investigate room 2", "investigate room 3", "investigate room 4", "investigate room 5", "investigate room 6", "investigate room 7", "investigate room 8", "investigate room 9", "investigate room 10", "investigate room 11", "investigate room 12"
+        ], 'first_choice');
+    } else if (state === 'first_choice') {
+        if (window.validAnswers.includes(value)) {
+            state = value;
+            resetAttempts();
+        } else {
+            attempts++;
+            if (attempts < 3) {
+                print(`Try again. Attempts left: ${3 - attempts}`);
+            } else {
+                print("Out of attempts! You have failed and died.");
+                state = 'end';
+            }
+            return;
+        }
+    }
+
+    // Living Room
+    if (state === "investigate living room" || state === "investigate the living room") {
+        print("You enter the living room. The body lies on the floor, a pool of blood around it.");
+        print("You notice a broken vase nearby and a faint smell of perfume in the air.");
+        getAttemptedInput("What should you do?", ["investigate body", "investigate the body"], "living_investigate_body");
+    } else if (state === "living_investigate_body") {
+        if (window.validAnswers.includes(value)) {
+            print("The body is one of the person who lives in room 4.");
+            print("She is wearing a red dress, and you recognize her as Clair, your cousin.");
+            print("You see a note on the coffee table that reads: 'Meet me at midnight. -R'");
+            print("You also notice muddy footprints leading to the kitchen and a broken window.");
+            getAttemptedInput("Where do you want to investigate next?", ["investigate room 4", "investigate 4", "investigate clair's room", "investigate kitchen", "investigate garden"], "living_next");
+        } else {
+            attempts++;
+            if (attempts < 3) {
+                print(`Try again. Attempts left: ${3 - attempts}`);
+            } else {
+                print("Out of attempts! You have failed and died.");
+                state = 'end';
+            }
+            return;
+        }
+    } else if (state === "living_next") {
+        if (["investigate kitchen"].includes(value)) {
+            print("You head to the kitchen and you sense that something is wrong.");
+            print("You notice a missing knife and a trail of meandering footprints through the kitchen to the garden.");
+            print("You start to head out when you hear a near to silent noise behind you.");
+            print("As you start to turn around, you feel a sharp pain in your back and everything goes black.");
+            print("Ending: The cursed kitchen knife. Score " + score);
+            state = 'end';
+        } else if (["investigate garden"].includes(value)) {
+            print("You step into the garden. The grass is wet and you can see muddy footprints leading to the shed in the corner near the oak tree.");
+            print("Though the shed is locked and the lights are off, you can hear footsteps within.");
+            getAttemptedInput("Do you want to try to open the shed? enter yes, no, or you can knock", ["yes", "no", "knock"], "garden_shed");
+        } else if (["investigate room 4", "investigate 4", "investigate clair's room"].includes(value)) {
+            print("You enter room 4 and you see: closet, door, bed, suspicious rug, balcony, dressing table (mirror)");
+            getAttemptedInput("Where do you want to look?", [
+                "look in closet", "investigate the closet", "investigate closet",
+                "look under bed", "investigate bed",
+                "look under rug", "investigate rug",
+                "open door", "go to balcony",
+                "look in mirror", "investigate dressing table",
+                "read note", "search drawers", "check balcony floor", "inspect window", "listen at door"
+            ], "room4_pick");
+        } else {
+            print("You wander the halls, but find nothing new at all.");
+            print("Ending: Lost in the Mansion. Score " + score);
+            state = 'end';
+        }
+    } else if (state === "garden_shed") {
+        if (value === "yes") {
+            print("You shove the door with all your strength and it hits you against the wall as it opens.");
+            print("You fall over and pass out as you finally understand that you should have listened to your parents and learned to knock before breaking into a room, or shed or whatever.");
+            print("Ending: Childish curiosity and a broken door. Score " + score);
+            state = 'end';
+        } else if (value === "knock") {
+            print("You knock on the shed door and you hear the lock click from inside.");
+            print("A maid opens the door and screams when she sees you.");
+            print("She slams the door closed and you listen to the sound of her running as if her life depended on it.");
+            print("You lose motivation to continue this investigation and take the next plane to Madagascar.");
+            print("Ending: The unpromptly vacation. Score " + score);
+            state = 'end';
+        } else if (value === "no") {
+            print("You don't open the shed but you feel like you should have.");
+            print("You wander the mansion for a while but nothing happens...");
+            print("You decide to take a cup of tea, but black out just as you take a sip.");
+            print("Ending: Teaparty with the murderer. Score " + score);
+            state = 'end';
+        }
+    } else if (state === "room4_pick") {
+        if (["look in closet", "investigate the closet", "investigate closet"].includes(value)) {
+            print("Inside you see a red cloth, stained perhaps, with the initials 'C.D.' on it. It looks like it was torn from a dress.");
+            score += 1;
+            print("You feel uneasy. As you look closer, you notice a faint perfume scent—one you remember from the kitchen earlier.");
+        } else if (["look under bed", "investigate bed"].includes(value)) {
+            print("You find a dusty box. Inside is a photo of Clair with another person, their face scratched out.");
+            print("Who could it be? On the back, a date is written: 'Midnight, last Friday.'");
+        } else if (["look under rug", "investigate rug"].includes(value)) {
+            print("You lift the rug and find a trapdoor. It's locked, but there are muddy footprints leading to it.");
+            print("Maybe someone used this recently. You also spot a small golden key nearby.");
+        } else if (["open door"].includes(value)) {
+            print("The door leads to a small bathroom. Nothing seems out of place, but the window is open.");
+            print("Did someone escape? On the windowsill, you find a single red thread.");
+        } else if (["go to balcony"].includes(value)) {
+            print("On the balcony, you see a scarf caught on the railing. It matches the red cloth from the closet.");
+            print("The garden is just below. You also notice a muddy handprint on the balcony door.");
+        } else if (["look in mirror", "investigate dressing table"].includes(value)) {
+            print("You find a hidden drawer in the dressing table. Inside is a note: 'Meet me at midnight. -R'");
+            print("Who is 'R'? This could be a clue. Next to the note is a small locket with a faded photo of Clair and a mysterious figure.");
+        } else if (value === "read note") {
+            print("You read the note again: 'Meet me at midnight. -R'. On the back, you notice a faint map of the garden.");
+        } else if (value === "search drawers") {
+            print("You search all the drawers and find a broken necklace clasp and a small scrap of red fabric.");
+        } else if (value === "check balcony floor") {
+            print("You check the balcony floor and find a muddy footprint and a bottle with lipstick on it.");
+        } else if (value === "inspect window") {
+            print("You inspect the bathroom window and see scratch marks, as if someone climbed out in a hurry.");
+        } else if (value === "listen at door") {
+            print("You listen at the door and hear faint footsteps in the hallway. Someone might be watching you.");
+        } else {
+            print("You don't find anything unusual, but you can't shake the feeling that you're being watched.");
+        }
+        getAttemptedInput("Where do you want to go now? (e.g., 'investigate garden', 'investigate kitchen', 'investigate room 5')", [
+            "investigate garden", "investigate kitchen", "investigate room 5", "investigate room 6", "investigate room 7", "investigate room 8", "investigate room 9", "investigate room 10", "investigate room 11", "investigate room 12"
+        ], "room4_next");
+    } else if (state === "room4_next") {
+        if (value === "investigate garden") {
+            print("You step into the garden. The grass is wet and you see muddy footprints leading to a shed.");
+            print("The shed is locked, but you hear a faint noise inside.");
+            getAttemptedInput("Do you want to try to open the shed? (yes/no/knock)", ["yes", "no", "knock"], "garden_shed2");
+        } else if (value === "investigate kitchen") {
+            print("In the kitchen, you find a knife missing from the rack and a half-eaten apple on the counter.");
+            print("Someone left in a hurry.");
+            getAttemptedInput("Do you want to search the trash or check the back door? (search/check/leave)", ["search", "check", "leave"], "kitchen_choice");
+        } else if (value.startsWith("investigate room")) {
+            let roomNum = value.replace('investigate room ', '').trim();
+            print(`You enter room ${roomNum}. It's quiet. You notice a diary on the desk.`);
+            if (roomNum === "9") {
+                print("The diary confesses to the crime and mentions jealousy over Clair's inheritance.");
+                print("You have found the culprit's room: Room 9! Congratulations, you solved the mystery.");
+                print("Ending: The Jealous Heir. Score " + score);
+                state = 'end';
+            } else if (roomNum === "7") {
+                score += 1;
+                print("You find a blood-stained glove and a threatening letter addressed to Clair.");
+                print("It seems the resident of room 7 is the real culprit! You alert the authorities. Justice is served.");
+                print("Ending: The True Culprit in Room 7. Score " + score);
+                state = 'end';
+            } else if (roomNum === "4") {
+                print("You find Clair's belongings, but nothing new. The room is eerily quiet.");
+                print("Ending: The Victim's Silence. Score " + score);
+                state = 'end';
+            } else {
+                print("The diary mentions secret meetings in the garden at night.");
+                print("Ending: The Mystery Remains. Score " + score);
+                state = 'end';
+            }
+        } else {
+            print("You wander the halls, but find nothing new at all.");
+            print("Ending: Lost in the Mansion. Score " + score);
+            state = 'end';
+        }
+    } else if (state === "garden_shed2") {
+        if (value === "yes") {
+            print("You force the door open and find muddy boots and a torn piece of paper.");
+            print("The paper reads: 'Room 9. Midnight.' This could be the culprit's room!");
+            print("You hurry back to the mansion to investigate room 9.");
+            print("You enter room 9. It's empty, but you find a diary under the pillow.");
+            print("The diary confesses to the crime and mentions jealousy over Clair's inheritance.");
+            print("You have found the culprit's room: Room 9! Congratulations, you solved the mystery.");
+            state = 'end';
+        } else if (value === "knock") {
+            print("You knock on the shed door. After a moment, a frightened maid opens it. She confesses she saw someone sneaking out of room 7 last night.");
+            print("You decide to investigate room 7.");
+            print("Inside room 7, you find a blood-stained glove and a threatening letter addressed to Clair.");
+            print("You are sure that the culprit must be them, but you need more evidence.");
+            print("It seems the resident of room 7 is the real culprit so You alert the authorities. Justice is served.");
+            print("The resident of room 7 protests their innocence, and you are torn between believing them or not.");
+            print("Ending: the unsure solution. Score " + score);
+            state = 'end';
+        } else {
+            print("You decide not to open the shed. The mystery remains unsolved. Maybe some secrets are best left hidden.");
+            print("Ending: The Case Goes Cold. Score " + score);
+            state = 'end';
+        }
+    } else if (state === "kitchen_choice") {
+        if (value === "search") {
+            print("You search the trash and find a torn piece of a letter: '...meet in the garden at midnight. -R'");
+            print("You realize the kitchen and garden are connected in this mystery, but the trail goes cold.");
+            print("Ending: The Mystery Remains. Score " + score);
+            state = 'end';
+        } else if (value === "check") {
+            print("You check the back door and see muddy footprints leading away from the house. You follow them to the road, but the culprit is gone.");
+            print("Ending: The Suspect Escapes. Score " + score);
+            state = 'end';
+        } else {
+            print("You leave the kitchen, feeling like you missed something important.");
+            print("Ending: Unsolved, for now. Score " + score);
+            state = 'end';
+        }
+    } else if (state === "investigate kitchen") {
+        print("You head to the kitchen. The air smells of apples and something metallic.");
+        print("You notice a knife missing from the rack and muddy footprints on the floor.");
+        getAttemptedInput("Do you want to search the trash, check the back door, or look in the fridge? (search/check/fridge/leave)", ["search", "check", "fridge", "leave"], "kitchen_choice2");
+    } else if (state === "kitchen_choice2") {
+        if (value === "search") {
+            print("You search the trash and find a torn piece of a letter: '...meet in the garden at midnight. -R'");
+            print("You realize the kitchen and garden are connected in this mystery, but the trail goes cold.");
+            print("Ending: The Mystery Remains. Score " + score);
+            state = 'end';
+        } else if (value === "check") {
+            print("You check the back door and see muddy footprints leading away from the house. You follow them to the road, but the culprit is gone.");
+            print("Ending: The Suspect Escapes. Score " + score);
+            state = 'end';
+        } else if (value === "fridge") {
+            print("You open the fridge and find a bottle of expensive wine, half-empty, and a plate of untouched cheese. Someone was celebrating or hiding here.");
+            print("You also find a red lipstick, the same shade as the one on the bottle from the balcony.");
+            print("You sense a connection between the kitchen and the balcony.");
+            print("Ending: A Tangled Web. Score " + score);
+            state = 'end';
+        } else {
+            print("You leave the kitchen, feeling like you missed something important.");
+            print("Ending: Unsolved, for now.");
+            state = 'end';
+        }
+    } else if (state === "investigate garden") {
+        print("You step into the garden. The grass is wet and you see muddy footprints leading to a shed.");
+        print("The air is chilly and you hear distant birds. There are flowerbeds, a stone bench, and a small pond nearby.");
+        getAttemptedInput("Do you want to examine the footprints, look at the pond, sit on the bench, or go to the shed? (footprints/pond/bench/shed)", ["footprints", "pond", "bench", "shed"], "garden_action");
+    } else if (state === "garden_action") {
+        // For brevity, you can expand this branch with more clues and choices as in your Python code
+        print("Garden exploration logic not fully implemented yet.");
+        state = 'end';
+    } else if (state === "investigate dining room") {
+        print("You enter the dining room. The table is set for breakfast, but no one is here.");
+        print("You notice a spilled cup of tea and a napkin with a lipstick mark.");
+        getAttemptedInput("Do you want to check under the table, inspect the tea, or look at the painting? (under table/tea/painting/leave)", ["under table", "tea", "painting", "leave"], "dining_choice");
+    } else if (state === "dining_choice") {
+        if (value === "under table") {
+            print("You look under the table and find a dropped earring. It matches the locket from Clair's room.");
+            print("You sense a secret relationship was hidden here.");
+            print("Ending: Hidden Affairs. Score " + score);
+            state = 'end';
+        } else if (value === "tea") {
+            print("You inspect the tea and smell a faint almond scent. Poison? You pocket the cup for evidence.");
+            print("Ending: A Deadly Breakfast. Score " + score);
+            state = 'end';
+        } else if (value === "painting") {
+            print("You look at the painting and discover a safe hidden behind it. It's locked, but you hear something moving inside.");
+            print("Ending: Secrets Behind the Canvas. Score " + score);
+            state = 'end';
+        } else {
+            print("You leave the dining room, feeling like you missed something important.");
+            print("Ending: Unsolved, for now. Score " + score);
+            state = 'end';
+        }
+    } else if (state.startsWith("investigate room")) {
+        let roomNum = state.replace('investigate room ', '').trim();
+        print(`You enter room ${roomNum}. It's quiet. You notice a diary on the desk.`);
+        if (roomNum === "9") {
+            print("The diary confesses to the crime and mentions jealousy over Clair's inheritance.");
+            print("You have found the culprit's room: Room 9! Congratulations, you solved the mystery.");
+            print("Ending: The Jealous Heir. Score " + score);
+            state = 'end';
+        } else if (roomNum === "7") {
+            print("You find a blood-stained glove and a threatening letter addressed to Clair.");
+            print("It seems the resident of room 7 is the real culprit! You alert the authorities. Justice is served.");
+            print("Ending: The True Culprit in Room 7. Score " + score);
+            state = 'end';
+        } else if (roomNum === "4") {
+            print("You find Clair's belongings, but nothing new. The room is eerily quiet.");
+            print("Ending: The Victim's Silence. Score " + score);
+            state = 'end';
+        } else {
+            print("The diary mentions secret meetings in the garden at night.");
+            print("Ending: The Mystery Remains. Score " + score);
+            state = 'end';
+        }
+    } else if (state === 'end') {
+        print("Game over. Refresh the page to play again.");
+        input.disabled = true;
+    }
+}
+
+window.onload = () => {
+    print("Welcome to the Mansion Mystery Game!");
+    print("What is your name?");
+};
+</script>
+</body>
+</html>
